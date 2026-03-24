@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/usuario/Downloads/PrograCL/output/C1'
+relocations:     []
+...
