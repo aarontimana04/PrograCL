@@ -53,9 +53,5 @@ int main(){
     // OUTPUT -> 1+2+3+4+5 = 15
 
     imprimirDivisiones(10);
-
-    cout<<endl;
-
-    parimpar(10);
     return 0;
 }
