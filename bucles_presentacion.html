@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bucles en C++ — For & While</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --border: #1e2d40;
+    --for-color: #00d4ff;
+    --while-color: #ff6b35;
+    --accent: #7c3aed;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --code-bg: #0d1117;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NAV DOTS */
+  .nav-dots {
+    position: fixed;
+    right: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 100;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .dot.active { background: var(--for-color); transform: scale(1.5); }
+
+  /* SLIDES */
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .slide.visible { opacity: 1; transform: translateY(0); }
+
+  .slide-inner {
+    max-width: 900px;
+    width: 100%;
+  }
+
+  /* SLIDE 1 — PORTADA */
+  .slide-1 {
+    background: radial-gradient(ellipse at 30% 50%, #0f1f3d 0%, var(--bg) 60%);
+    text-align: center;
+  }
+  .slide-1 .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--for-color);
+    border: 1px solid var(--for-color);
+    padding: 4px 14px;
+    border-radius: 2px;
+    margin-bottom: 32px;
+    letter-spacing: 3px;
+  }
+  .slide-1 h1 {
+    font-size: clamp(48px, 8vw, 96px);
+    font-weight: 800;
+    line-height: 0.95;
+    margin-bottom: 24px;
+  }
+  .slide-1 h1 span.for { color: var(--for-color); }
+  .slide-1 h1 span.while { color: var(--while-color); }
+  .slide-1 .subtitle {
+    color: var(--muted);
+    font-size: 18px;
+    font-weight: 400;
+    margin-bottom: 48px;
+  }
+  .slide-1 .scroll-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    animation: bounce 2s infinite;
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+  }
+
+  /* SLIDE 2 — ¿QUÉ ES UN BUCLE? */
+  .slide-2 { background: var(--bg); }
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .slide h2 {
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 800;
+    margin-bottom: 32px;
+    line-height: 1.1;
+  }
+  .analogy-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 32px;
+  }
+  .analogy-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .analogy-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--for-color);
+  }
+  .analogy-card.while-card::before { background: var(--while-color); }
+  .analogy-card .emoji { font-size: 36px; margin-bottom: 16px; display: block; }
+  .analogy-card h3 { font-size: 20px; margin-bottom: 10px; }
+  .analogy-card p { color: var(--muted); font-size: 15px; line-height: 1.6; font-family: 'Syne', sans-serif; font-weight: 400; }
+
+  /* FLOW DIAGRAM */
+  .flow-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin: 32px auto;
+    max-width: 340px;
+  }
+  .flow-box {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    text-align: center;
+    width: 100%;
+  }
+  .flow-box.diamond {
+    border-radius: 0;
+    transform: rotate(45deg);
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 8px 0;
+  }
+  .flow-box.diamond span {
+    transform: rotate(-45deg);
+    font-size: 13px;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .flow-arrow {
+    font-size: 20px;
+    color: var(--muted);
+    line-height: 1;
+    padding: 2px 0;
+  }
+  .flow-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    align-self: flex-end;
+    margin-right: 40px;
+  }
+
+  /* SLIDE 3 — FOR */
+  .slide-3 { background: radial-gradient(ellipse at 70% 30%, #001a2e 0%, var(--bg) 60%); }
+
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    line-height: 2;
+    position: relative;
+    overflow: hidden;
+  }
+  .code-block::before {
+    content: 'C++';
+    position: absolute;
+    top: 12px; right: 16px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+  .kw { color: #c792ea; }
+  .type { color: #82aaff; }
+  .num { color: #f78c6c; }
+  .fn { color: #82aaff; }
+  .op { color: var(--for-color); }
+  .op-w { color: var(--while-color); }
+  .cm { color: #546e7a; font-style: italic; }
+  .str { color: #c3e88d; }
+
+  .syntax-breakdown {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .syntax-part {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    border-top: 3px solid var(--for-color);
+    text-align: center;
+  }
+  .syntax-part.while-part { border-top-color: var(--while-color); }
+  .syntax-part .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .syntax-part .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--for-color);
+  }
+  .syntax-part.while-part .value { color: var(--while-color); }
+  .syntax-part p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  /* OUTPUT BOX */
+  .output-box {
+    background: #000;
+    border: 1px solid #2a3a2a;
+    border-radius: 6px;
+    padding: 20px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    margin-top: 20px;
+    position: relative;
+  }
+  .output-box::before {
+    content: '▶ OUTPUT';
+    position: absolute;
+    top: 10px; right: 14px;
+    font-size: 10px;
+    color: #2d5a2d;
+    letter-spacing: 2px;
+  }
+  .output-line { color: #4ade80; line-height: 1.8; }
+  .output-line span { color: #86efac; }
+
+  /* SLIDE 5 — COMPARACIÓN */
+  .slide-5 { background: var(--bg); }
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 32px;
+    font-size: 15px;
+  }
+  .comparison-table th {
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  .comparison-table th.for-th { color: var(--for-color); }
+  .comparison-table th.while-th { color: var(--while-color); }
+  .comparison-table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .comparison-table td.feature {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .comparison-table tr:hover td { background: var(--surface); }
+
+  /* SLIDE 6 — REGLA DE ORO */
+  .slide-6 {
+    background: radial-gradient(ellipse at 50% 50%, #1a0d2e 0%, var(--bg) 65%);
+    text-align: center;
+  }
+  .rule-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 40px;
+    text-align: left;
+  }
+  .rule-card {
+    border-radius: 12px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .rule-card.for-card {
+    background: linear-gradient(135deg, #001a2e, #002a40);
+    border: 1px solid var(--for-color);
+  }
+  .rule-card.while-card {
+    background: linear-gradient(135deg, #1f0e00, #2d1500);
+    border: 1px solid var(--while-color);
+  }
+  .rule-card .icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .rule-card h3 {
+    font-size: 22px;
+    margin-bottom: 12px;
+    color: var(--for-color);
+  }
+  .rule-card.while-card h3 { color: var(--while-color); }
+  .rule-card ul {
+    list-style: none;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 2;
+  }
+  .rule-card ul li::before { content: '→ '; color: var(--for-color); }
+  .rule-card.while-card ul li::before { color: var(--while-color); }
+
+  /* INTERACTIVE DEMO */
+  .demo-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin-top: 32px;
+  }
+  .demo-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+  }
+  .demo-controls {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .demo-controls label {
+    font-size: 14px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .demo-controls input {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    width: 80px;
+  }
+  .btn {
+    padding: 10px 24px;
+    border-radius: 4px;
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+  .btn-for {
+    background: var(--for-color);
+    color: #000;
+  }
+  .btn-while {
+    background: var(--while-color);
+    color: #000;
+  }
+  .btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+  .demo-output {
+    background: #000;
+    border-radius: 6px;
+    padding: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    min-height: 80px;
+    max-height: 200px;
+    overflow-y: auto;
+    color: #4ade80;
+    line-height: 1.8;
+  }
+
+  /* CHIP */
+  .chip {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+  .chip-for { background: rgba(0,212,255,0.15); color: var(--for-color); border: 1px solid rgba(0,212,255,0.3); }
+  .chip-while { background: rgba(255,107,53,0.15); color: var(--while-color); border: 1px solid rgba(255,107,53,0.3); }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--for-color), var(--while-color));
+    z-index: 200;
+    transition: width 0.3s;
+  }
+
+  @media (max-width: 640px) {
+    .analogy-box, .syntax-breakdown, .rule-cards { grid-template-columns: 1fr; }
+    .slide { padding: 40px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav class="nav-dots" id="navDots"></nav>
+
+<!-- SLIDE 1: PORTADA -->
+<section class="slide slide-1" id="slide-0">
+  <div class="slide-inner">
+    <div class="tag">FUNDAMENTOS DE LA PROGRAMACIÓN</div>
+    <h1>
+      <span class="for">for</span><br>
+      <span class="while">while</span>
+    </h1>
+    <p class="subtitle">Estructuras de repetición en C++</p>
+    <div class="scroll-hint">↓ desplázate para explorar</div>
+  </div>
+</section>
+
+<!-- SLIDE 2: ¿QUÉ ES UN BUCLE? -->
+<section class="slide slide-2" id="slide-1">
+  <div class="slide-inner">
+    <div class="section-label">// concepto base</div>
+    <h2>¿Qué es un bucle?</h2>
+    <p style="color: var(--muted); font-size: 18px; line-height: 1.7; max-width: 600px;">
+      Un bucle permite <strong style="color:var(--text)">repetir un bloque de código</strong> múltiples veces sin tener que escribirlo una y otra vez.
+    </p>
+
+    <div class="analogy-box">
+      <div class="analogy-card">
+        <span class="emoji">🔁</span>
+        <h3>Sin bucle</h3>
+        <p>Tienes que escribir la misma instrucción 10 veces manualmente. Repetitivo, largo y propenso a errores.</p>
+      </div>
+      <div class="analogy-card while-card">
+        <span class="emoji">⚡</span>
+        <h3>Con bucle</h3>
+        <p>Le dices al programa: "repite esto X veces" o "repite esto mientras se cumpla una condición". Simple y poderoso.</p>
+      </div>
+    </div>
+
+    <!-- FLUJO GENÉRICO -->
+    <div style="margin-top: 40px;">
+      <div class="section-label" style="text-align:center">// flujo de un bucle</div>
+      <div class="flow-diagram">
+        <div class="flow-box">Inicio</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-box" style="border-color: var(--for-color); color: var(--for-color);">¿Se cumple<br>la condición?</div>
+        <div style="display:flex; gap:40px; align-items:flex-start; margin: 4px 0;">
+          <div style="text-align:center">
+            <div style="color: #4ade80; font-family:'JetBrains Mono',monospace; font-size:12px;">SÍ</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-box" style="width:140px; font-size:13px;">Ejecuta el<br>código</div>
+            <div class="flow-arrow">↓</div>
+            <div style="color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:11px;">↺ vuelve a verificar</div>
+          </div>
+          <div style="text-align:center; padding-top: 24px;">
+            <div style="color: #f87171; font-family:'JetBrains Mono',monospace; font-size:12px;">NO</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-box" style="width:120px; font-size:13px;">Sale del<br>bucle</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3: FOR -->
+<section class="slide slide-3" id="slide-2">
+  <div class="slide-inner">
+    <div class="section-label">// estructura 01</div>
+    <h2 style="color: var(--for-color);">Bucle <span style="font-family:'JetBrains Mono',monospace">for</span></h2>
+    <p style="color: var(--muted); margin-bottom: 24px; font-size: 16px; line-height: 1.6;">
+      Úsalo cuando <strong style="color:var(--text)">sabes exactamente cuántas veces</strong> quieres repetir algo.
+    </p>
+
+    <div class="code-block">
+<span class="kw">for</span> (<span class="type">int</span> <span class="op">i</span> = <span class="num">1</span>; <span class="op">i</span> &lt;= <span class="num">5</span>; <span class="op">i</span>++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">cout</span> &lt;&lt; <span class="str">"Iteración número: "</span> &lt;&lt; <span class="op">i</span> &lt;&lt; <span class="fn">endl</span>;<br>
+}
+    </div>
+
+    <div class="syntax-breakdown">
+      <div class="syntax-part">
+        <span class="label">INICIO</span>
+        <div class="value">int i = 1</div>
+        <p>Se ejecuta una sola vez al comenzar. Inicializa el contador.</p>
+      </div>
+      <div class="syntax-part">
+        <span class="label">CONDICIÓN</span>
+        <div class="value">i &lt;= 5</div>
+        <p>Se evalúa antes de cada repetición. Si es falsa, el bucle termina.</p>
+      </div>
+      <div class="syntax-part">
+        <span class="label">INCREMENTO</span>
+        <div class="value">i++</div>
+        <p>Se ejecuta al final de cada iteración. Avanza el contador.</p>
+      </div>
+    </div>
+
+    <div class="output-box">
+      <div class="output-line">Iteración número: <span>1</span></div>
+      <div class="output-line">Iteración número: <span>2</span></div>
+      <div class="output-line">Iteración número: <span>3</span></div>
+      <div class="output-line">Iteración número: <span>4</span></div>
+      <div class="output-line">Iteración número: <span>5</span></div>
+    </div>
+
+    <!-- EJEMPLO PRÁCTICO: TABLA DE MULTIPLICAR -->
+    <div style="margin-top: 28px;">
+      <div class="section-label">// ejemplo práctico</div>
+      <div class="code-block">
+<span class="cm">// Tabla de multiplicar del 5</span><br>
+<span class="kw">for</span> (<span class="type">int</span> <span class="op">i</span> = <span class="num">1</span>; <span class="op">i</span> &lt;= <span class="num">10</span>; <span class="op">i</span>++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">cout</span> &lt;&lt; <span class="str">"5 x "</span> &lt;&lt; <span class="op">i</span> &lt;&lt; <span class="str">" = "</span> &lt;&lt; <span class="num">5</span> * <span class="op">i</span> &lt;&lt; <span class="fn">endl</span>;<br>
+}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4: WHILE -->
+<section class="slide" id="slide-3" style="background: radial-gradient(ellipse at 30% 70%, #1f0e00 0%, var(--bg) 60%);">
+  <div class="slide-inner">
+    <div class="section-label">// estructura 02</div>
+    <h2 style="color: var(--while-color);">Bucle <span style="font-family:'JetBrains Mono',monospace">while</span></h2>
+    <p style="color: var(--muted); margin-bottom: 24px; font-size: 16px; line-height: 1.6;">
+      Úsalo cuando <strong style="color:var(--text)">no sabes cuántas veces</strong> se va a repetir — depende de una condición externa.
+    </p>
+
+    <div class="code-block">
+<span class="type">int</span> <span class="op-w">numero</span> = <span class="num">0</span>;<br><br>
+<span class="kw">while</span> (<span class="op-w">numero</span> != <span class="num">5</span>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">cout</span> &lt;&lt; <span class="str">"Ingresa el número 5: "</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">cin</span> &gt;&gt; <span class="op-w">numero</span>;<br>
+}
+    </div>
+
+    <div class="syntax-breakdown">
+      <div class="syntax-part while-part" style="grid-column: span 1">
+        <span class="label">CONDICIÓN</span>
+        <div class="value">numero != 5</div>
+        <p>Se evalúa antes de cada vuelta. Mientras sea verdadera, el código se repite.</p>
+      </div>
+      <div class="syntax-part while-part" style="grid-column: span 2">
+        <span class="label">CUERPO</span>
+        <div class="value">cin >> numero</div>
+        <p>Código que se ejecuta en cada iteración. Aquí debe haber algo que eventualmente cambie la condición, o el bucle nunca termina (bucle infinito ♾️).</p>
+      </div>
+    </div>
+
+    <!-- EJEMPLO PRÁCTICO: SUMA HASTA 0 -->
+    <div style="margin-top: 28px;">
+      <div class="section-label">// ejemplo práctico</div>
+      <div class="code-block">
+<span class="cm">// Suma números hasta que el usuario ingrese 0</span><br>
+<span class="type">int</span> <span class="op-w">n</span>, <span class="op-w">suma</span> = <span class="num">0</span>;<br>
+<span class="fn">cin</span> &gt;&gt; <span class="op-w">n</span>;<br><br>
+<span class="kw">while</span> (<span class="op-w">n</span> != <span class="num">0</span>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="op-w">suma</span> += <span class="op-w">n</span>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">cin</span> &gt;&gt; <span class="op-w">n</span>;<br>
+}<br>
+<span class="fn">cout</span> &lt;&lt; <span class="str">"Suma total: "</span> &lt;&lt; <span class="op-w">suma</span>;
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5: COMPARACIÓN -->
+<section class="slide slide-5" id="slide-4">
+  <div class="slide-inner">
+    <div class="section-label">// comparación</div>
+    <h2>¿Cuándo usar cada uno?</h2>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th style="color:var(--muted); width:30%">Característica</th>
+          <th class="for-th">for</th>
+          <th class="while-th">while</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="feature">Iteraciones</td>
+          <td>Conocidas de antemano</td>
+          <td>Desconocidas, dependen de condición</td>
+        </tr>
+        <tr>
+          <td class="feature">Contador</td>
+          <td>Integrado en la sintaxis</td>
+          <td>Debes manejarlo manualmente</td>
+        </tr>
+        <tr>
+          <td class="feature">Legibilidad</td>
+          <td>Muy clara para rangos</td>
+          <td>Clara para condiciones dinámicas</td>
+        </tr>
+        <tr>
+          <td class="feature">Ejemplo típico</td>
+          <td>Recorrer un arreglo, tabla de multiplicar</td>
+          <td>Leer entrada hasta que sea válida, menú</td>
+        </tr>
+        <tr>
+          <td class="feature">¿Son intercambiables?</td>
+          <td colspan="2" style="text-align:center; color: var(--text);">Sí — pero uno es más natural que el otro según el caso</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- MISMO PROBLEMA, DOS SOLUCIONES -->
+    <div style="margin-top: 36px;">
+      <div class="section-label">// mismo resultado, diferente forma</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--for-color); margin-bottom:8px; letter-spacing:2px;">CON FOR</div>
+          <div class="code-block" style="font-size:13px; padding:20px;">
+<span class="kw">for</span> (<span class="type">int</span> <span class="op">i</span>=<span class="num">1</span>; <span class="op">i</span>&lt;=<span class="num">5</span>; <span class="op">i</span>++)<br>
+&nbsp;&nbsp;<span class="fn">cout</span> &lt;&lt; <span class="op">i</span> &lt;&lt; <span class="fn">endl</span>;
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--while-color); margin-bottom:8px; letter-spacing:2px;">CON WHILE</div>
+          <div class="code-block" style="font-size:13px; padding:20px;">
+<span class="type">int</span> <span class="op-w">i</span>=<span class="num">1</span>;<br>
+<span class="kw">while</span>(<span class="op-w">i</span>&lt;=<span class="num">5</span>) {<br>
+&nbsp;&nbsp;<span class="fn">cout</span>&lt;&lt;<span class="op-w">i</span>&lt;&lt;<span class="fn">endl</span>; <span class="op-w">i</span>++;<br>
+}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6: DEMO INTERACTIVA -->
+<section class="slide" id="slide-5" style="background: var(--bg);">
+  <div class="slide-inner">
+    <div class="section-label">// pruébalo tú mismo</div>
+    <h2>Demo interactiva</h2>
+    <p style="color: var(--muted); margin-bottom: 8px;">Elige el tipo de bucle e ingresa un número para ver la tabla de multiplicar.</p>
+
+    <div class="demo-section">
+      <div class="demo-title">SIMULADOR DE BUCLES</div>
+      <div class="demo-controls">
+        <label>Número:</label>
+        <input type="number" id="demoNum" value="3" min="1" max="20">
+        <label>Hasta:</label>
+        <input type="number" id="demoMax" value="10" min="1" max="20">
+        <button class="btn btn-for" onclick="runDemo('for')">▶ Ejecutar con FOR</button>
+        <button class="btn btn-while" onclick="runDemo('while')">▶ Ejecutar con WHILE</button>
+      </div>
+      <div id="demoCode" class="code-block" style="font-size:13px; margin-bottom:16px; min-height: 60px;"></div>
+      <div class="demo-output" id="demoOutput">// el resultado aparecerá aquí...</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7: RESUMEN -->
+<section class="slide slide-6" id="slide-6">
+  <div class="slide-inner" style="text-align:center;">
+    <div class="section-label">// resumen</div>
+    <h2>La regla de oro</h2>
+
+    <div class="rule-cards">
+      <div class="rule-card for-card">
+        <span class="icon">🔢</span>
+        <h3>Usa FOR cuando...</h3>
+        <ul>
+          <li>Sabes cuántas veces repetir</li>
+          <li>Tienes un rango definido</li>
+          <li>Recorres un arreglo o lista</li>
+          <li>Usas un contador claro</li>
+        </ul>
+      </div>
+      <div class="rule-card while-card">
+        <span class="icon">❓</span>
+        <h3>Usa WHILE cuando...</h3>
+        <ul>
+          <li>No sabes cuántas iteraciones habrá</li>
+          <li>Dependes del usuario o un dato externo</li>
+          <li>La condición es dinámica</li>
+          <li>Haces menús o validaciones</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top: 48px; padding: 28px; background: var(--surface); border-radius: 12px; border: 1px solid var(--border);">
+      <p style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">💡 Clave para recordar</p>
+      <p style="color: var(--muted); font-size: 17px; line-height: 1.7; max-width: 600px; margin: 0 auto;">
+        Ambos hacen lo mismo, pero el código más legible es el que usa el bucle
+        <strong style="color:var(--text)">más natural para cada situación</strong>.
+        Un buen programador no solo lo hace funcionar — lo hace entendible.
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  // SLIDES SETUP
+  const slides = document.querySelectorAll('.slide');
+  const navDots = document.getElementById('navDots');
+  const progressBar = document.getElementById('progressBar');
+
+  slides.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    dot.onclick = () => slides[i].scrollIntoView({ behavior: 'smooth' });
+    navDots.appendChild(dot);
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        const idx = [...slides].indexOf(entry.target);
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+        progressBar.style.width = ((idx + 1) / slides.length * 100) + '%';
+      }
+    });
+  }, { threshold: 0.4 });
+
+  slides.forEach(s => observer.observe(s));
+
+  // DEMO INTERACTIVA
+  function runDemo(type) {
+    const n = parseInt(document.getElementById('demoNum').value) || 3;
+    const max = parseInt(document.getElementById('demoMax').value) || 10;
+    const codeEl = document.getElementById('demoCode');
+    const outEl = document.getElementById('demoOutput');
+
+    let code = '', output = '';
+
+    if (type === 'for') {
+      code = `<span class="kw">for</span> (<span class="type">int</span> <span class="op">i</span> = <span class="num">1</span>; <span class="op">i</span> &lt;= <span class="num">${max}</span>; <span class="op">i</span>++) {<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">cout</span> &lt;&lt; <span class="str">"${n} x "</span> &lt;&lt; <span class="op">i</span> &lt;&lt; <span class="str">" = "</span> &lt;&lt; <span class="num">${n}</span> * <span class="op">i</span> &lt;&lt; <span class="fn">endl</span>;<br>}`;
+      for (let i = 1; i <= max; i++) output += `${n} x ${i} = ${n * i}\n`;
+    } else {
+      code = `<span class="type">int</span> <span class="op-w">i</span> = <span class="num">1</span>;<br><span class="kw">while</span> (<span class="op-w">i</span> &lt;= <span class="num">${max}</span>) {<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">cout</span> &lt;&lt; <span class="str">"${n} x "</span> &lt;&lt; <span class="op-w">i</span> &lt;&lt; <span class="str">" = "</span> &lt;&lt; <span class="num">${n}</span> * <span class="op-w">i</span> &lt;&lt; <span class="fn">endl</span>;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="op-w">i</span>++;<br>}`;
+      let i = 1;
+      while (i <= max) { output += `${n} x ${i} = ${n * i}\n`; i++; }
+    }
+
+    codeEl.innerHTML = code;
+    outEl.innerText = output.trim();
+  }
+
+  // Run default on load
+  runDemo('for');
+</script>
+</body>
+</html>

@@ -53,5 +53,14 @@ int main(){
     // OUTPUT -> 1+2+3+4+5 = 15
 
     imprimirDivisiones(10);
+
+    int n, suma = 0;
+    cin >> n;
+
+    while (n != 0) {
+    suma += n;
+    cin >> n;
+    }
+    cout << "Suma: " << suma;
     return 0;
 }
